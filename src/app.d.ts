@@ -7,6 +7,7 @@ declare global {
 		interface Locals {
 			pb: import('pocketbase').default
 			user: User | undefined
+			isAdmin: boolean
 		}
 		interface PageData {
 			flash?: { type: 'success' | 'error' | 'message' | 'warning' | 'info' | 'loading'; message: string; description?: string };

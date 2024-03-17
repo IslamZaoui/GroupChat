@@ -1,7 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 onAfterBootstrap((e) => {
-    console.log("Intellect DB initialized!")
+    console.log("DB initialized!")
 })
 
 onRealtimeAfterSubscribeRequest((e) => {

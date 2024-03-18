@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
+import { env } from "$env/dynamic/public";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -60,3 +61,14 @@ export const flyAndScale = (
         easing: cubicOut
     };
 };
+
+export const getAvatar = (userid: string, avatar: string) => {
+    if (avatar)
+        return avatar
+    else
+        return `https://source.boringavatars.com/beam/160/${userid}`
+}
+
+export const getMessageAttachment = (id: string, attachment: string) => {
+    return `${env.PUBLIC_POCKETBASE_URL}/api/files/r6tp41gjo2xojqx/${id}/${attachment}`
+}

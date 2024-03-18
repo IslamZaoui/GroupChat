@@ -18,3 +18,18 @@ export const authSchema = z.object({
 })
 
 export type AuthSchema = typeof authSchema;
+
+export const messageSchema = z.object({
+    content: z
+        .string({ required_error: 'Message is required' })
+        .min(1, { message: 'Message must be at least 1 character' })
+        .max(255, { message: 'Message must be at most 255 characters' })
+        .trim(),
+
+    attachment: z
+        .instanceof(File, { message: 'Please upload a file.' })
+        .refine((f) => f.size < 5_000_000, 'Max 5 MB upload size.')
+        .optional()
+})
+
+export type MessageSchema = typeof messageSchema

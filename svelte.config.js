@@ -6,9 +6,11 @@ const config = {
 	preprocess: [vitePreprocess({})],
 
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			runtime: 'edge'
+		}),
 		alias: {
-			"@/*": "./src/lib",
+			'@/*': './src/lib'
 		}
 	}
 };

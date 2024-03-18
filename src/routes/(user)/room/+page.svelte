@@ -94,7 +94,7 @@
 		class="flex w-full max-w-5xl items-start justify-between text-xs text-muted-foreground md:text-sm"
 	>
 		<p class="max-w-[150px] sm:max-w-lg">
-			Built by <a class="font-semibold" href="https://github.com/jakobhoeg/" target="_blank"
+			Built by <a class="font-semibold" href="https://islamzaoui.top/" target="_blank"
 				>Islam Zaoui</a
 			>. To be used with
 			<a class="font-semibold" href="https://kit.svelte.dev/" target="_blank">sveltekit</a>

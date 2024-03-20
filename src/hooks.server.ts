@@ -1,4 +1,3 @@
-import { dev } from '$app/environment'
 import { createInstance } from '$lib/pocketbase'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'

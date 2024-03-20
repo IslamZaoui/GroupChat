@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { pb } from '@/pocketbase';
-	import { getAvatar, getMessageAttachment } from '@/utils';
+	import { getAvatar, getMessageAttachment } from '@/index';
 	import Verified from 'lucide-svelte/icons/badge-check';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	export let message: Message;
 	export let thisUserId: string;
@@ -32,9 +32,11 @@
 		return attachmentType;
 	}
 
+	let unsub: () => void;
+
 	onMount(async () => {
 		try {
-			await pb.collection('users').subscribe<User>(message.expand.user.id, (e) => {
+			unsub = await pb.collection('users').subscribe<User>(message.expand.user.id, (e) => {
 				const user = e.record;
 				if (e.action === 'update') {
 					message.expand.user = user;
@@ -43,6 +45,10 @@
 		} catch (e) {
 			console.error(e);
 		}
+	});
+
+	onDestroy(() => {
+		if (unsub) unsub();
 	});
 </script>
 
@@ -73,7 +79,7 @@
 						<Verified size={16} class=" text-blue-600" />
 					{/if}</span
 				>
-				<span class="text-lg break-words max-w-[300px]">{message.content}</span>
+				<span class="max-w-[300px] break-words text-lg">{message.content}</span>
 			</div>
 			{#if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'image'}
 				<img

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAvatar } from '@/utils';
+	import { getAvatar } from '@/index';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import Verified from 'lucide-svelte/icons/badge-check';
 

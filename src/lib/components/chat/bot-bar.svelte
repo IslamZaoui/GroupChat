@@ -7,7 +7,7 @@
 	import { messageSchema, type MessageSchema } from '@/forms/schema';
 	import { superForm, type Infer, type SuperValidated } from 'sveltekit-superforms/client';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { isImageOrAudio } from '@/utils';
+	import { isImageOrAudio } from '@/index';
 	import Image from 'lucide-svelte/icons/file-image';
 	import Audio from 'lucide-svelte/icons/file-audio';
 	import Like from 'lucide-svelte/icons/thumbs-up';

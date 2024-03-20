@@ -6,6 +6,7 @@ onAfterBootstrap((e) => {
 
 onRealtimeAfterSubscribeRequest((e) => {
     const record = e.client.get("authRecord")
+    console.log(`User ${record?.get("username")} connected!`)
 
     if (record && !record.get("isOnline")) {
         record.set("isOnline", true);
@@ -15,6 +16,7 @@ onRealtimeAfterSubscribeRequest((e) => {
 
 onRealtimeDisconnectRequest((e) => {
     const record = e.client.get("authRecord")
+    console.log(`User ${record?.get("username")} disconnected!`)
 
     if (record && record.get("isOnline")) {
         record.set("isOnline", false);

@@ -5,7 +5,7 @@ import { zod } from "sveltekit-superforms/adapters";
 import { fail } from "@sveltejs/kit";
 import { redirect, setFlash } from "sveltekit-flash-message/server";
 import { ClientResponseError } from "pocketbase";
-import { extractError } from "@/utils";
+import { extractError } from '@/index';
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (locals.user) {
@@ -33,6 +33,7 @@ export const actions: Actions = {
                     passwordConfirm: form.data.password
                 })
             await locals.pb.collection('users').authWithPassword(form.data.username, form.data.password);
+            await locals.pb.collection('users').authRefresh();
         }
         catch (e) {
             console.error(e)

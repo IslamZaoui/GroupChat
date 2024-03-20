@@ -4,10 +4,6 @@
 	import { toast } from 'svelte-sonner';
 	import { getFlash } from 'sveltekit-flash-message';
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
-	import { pb } from '@/pocketbase';
-
-	export let data;
 
 	const flash = getFlash(page);
 
@@ -34,16 +30,6 @@
 		}
 		$flash = undefined;
 	}
-
-	onMount(async () => {
-		try {
-			if (data.user) {
-				await pb.collection('users').subscribe(data.user.id, ({}) => {});
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	});
 </script>
 
 <svelte:head>

@@ -3,7 +3,7 @@
 	import SettingsIcon from 'lucide-svelte/icons/settings';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { buttonVariants } from '../ui/button';
-	import { getAvatar } from '@/utils';
+	import { getAvatar } from '@/index';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import ChangePasswordForm from '@/forms/change-password-form.svelte';
 	import ChangeUsernameForm from '@/forms/change-username-form.svelte';
@@ -11,16 +11,18 @@
 	import { writable, type Writable } from 'svelte/store';
 	import Logout from 'lucide-svelte/icons/log-out';
 	import { pb } from '@/pocketbase';
-	import {  onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Verified from 'lucide-svelte/icons/badge-check';
 
 	export let user: User;
 
 	let optionDialogStatus: Writable<boolean> = writable(false);
 
+	let unsub: () => void;
+
 	onMount(async () => {
 		try {
-			 await pb.collection('users').subscribe<User>(user.id, (e) => {
+			await pb.collection('users').subscribe<User>(user.id, (e) => {
 				const userData = e.record;
 				if (e.action === 'update') user = userData;
 			});
@@ -29,6 +31,9 @@
 		}
 	});
 
+	onDestroy(() => {
+		if (unsub) unsub();
+	});
 </script>
 
 <div class="flex h-20 w-full items-center justify-between border-b p-4">

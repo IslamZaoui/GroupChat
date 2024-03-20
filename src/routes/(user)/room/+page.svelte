@@ -1,18 +1,21 @@
 <script lang="ts">
 	import { pb } from '@/pocketbase';
-	import { onMount, afterUpdate } from 'svelte';
+	import { onMount, afterUpdate, onDestroy } from 'svelte';
 	import type { PageData } from './$types';
 	import ChatLayout from '@/components/chat/ChatLayout.svelte';
 	import { messageListElement } from '@/components/chat/store';
 
 	export let data: PageData;
 
-	let onlineUsers: User[] = data.onlineUsers;
-	let messages: Message[] = data.messages;
+	$: onlineUsers = data.onlineUsers;
+	$: messages = data.messages;
+
+	let unsub1: () => void;
+	let unsub2: () => void;
 
 	onMount(async () => {
 		try {
-			await pb.collection('users').subscribe<User>('*', (e) => {
+			unsub1 = await pb.collection('users').subscribe<User>('*', (e) => {
 				const updatedUser = e.record;
 				switch (e.action) {
 					case 'create':
@@ -41,7 +44,7 @@
 		}
 
 		try {
-			await pb.collection('messages').subscribe<Message>(
+			unsub2 = await pb.collection('messages').subscribe<Message>(
 				'*',
 				(e) => {
 					let message = e.record;
@@ -76,6 +79,11 @@
 	export function scrollChatBottom(behavior?: ScrollBehavior): void {
 		$messageListElement.scrollTo({ top: $messageListElement.scrollHeight, behavior });
 	}
+
+	onDestroy(() => {
+		if (unsub1) unsub1();
+		if (unsub2) unsub2();
+	});
 
 	afterUpdate(() => {
 		scrollChatBottom('smooth');

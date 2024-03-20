@@ -4,7 +4,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { changeImage, changePassword, changeUsername, messageSchema } from '@/forms/schema';
 import { fail } from '@sveltejs/kit';
 import { ClientResponseError } from 'pocketbase';
-import { extractError } from '@/utils';
+import { extractError } from '@/index';
 import { setFlash } from 'sveltekit-flash-message/server';
 
 export const load = (async (event) => {

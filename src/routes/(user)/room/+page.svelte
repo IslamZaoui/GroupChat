@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { pb } from '@/pocketbase';
-	import { onMount, onDestroy, afterUpdate } from 'svelte';
+	import { onMount, afterUpdate } from 'svelte';
 	import type { PageData } from './$types';
 	import ChatLayout from '@/components/chat/ChatLayout.svelte';
 	import { messageListElement } from '@/components/chat/store';
@@ -9,21 +9,23 @@
 
 	let onlineUsers: User[] = data.onlineUsers;
 	let messages: Message[] = data.messages;
-	let unsubOnlineUsers: () => void;
-	let unsubMessages: () => void;
 
 	onMount(async () => {
 		try {
-			unsubOnlineUsers = await pb.collection('users').subscribe<User>('*', (e) => {
+			await pb.collection('users').subscribe<User>('*', (e) => {
 				const updatedUser = e.record;
 				switch (e.action) {
 					case 'create':
 						onlineUsers = [...onlineUsers, updatedUser];
 						break;
 					case 'update':
-						const userIndex = onlineUsers.findIndex((user) => user.id === updatedUser.id);
-						if (userIndex !== -1) {
-							onlineUsers[userIndex] = updatedUser;
+						if (updatedUser.isOnline) {
+							const userIndex = onlineUsers.findIndex((user) => user.id === updatedUser.id);
+							if (userIndex !== -1) {
+								onlineUsers[userIndex] = updatedUser;
+							}
+						} else {
+							onlineUsers = onlineUsers.filter((user) => user.id !== updatedUser.id);
 						}
 						break;
 					case 'delete':
@@ -39,7 +41,7 @@
 		}
 
 		try {
-			unsubMessages = await pb.collection('messages').subscribe<Message>(
+			await pb.collection('messages').subscribe<Message>(
 				'*',
 				(e) => {
 					let message = e.record;
@@ -74,15 +76,6 @@
 	export function scrollChatBottom(behavior?: ScrollBehavior): void {
 		$messageListElement.scrollTo({ top: $messageListElement.scrollHeight, behavior });
 	}
-
-	onDestroy(async () => {
-		if (unsubOnlineUsers) {
-			unsubOnlineUsers();
-		}
-		if (unsubMessages) {
-			unsubMessages();
-		}
-	});
 
 	afterUpdate(() => {
 		scrollChatBottom('smooth');

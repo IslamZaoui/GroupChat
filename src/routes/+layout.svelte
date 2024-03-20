@@ -4,7 +4,7 @@
 	import { toast } from 'svelte-sonner';
 	import { getFlash } from 'sveltekit-flash-message';
 	import { page } from '$app/stores';
-	import { onMount, onDestroy, afterUpdate } from 'svelte';
+	import { onMount } from 'svelte';
 	import { pb } from '@/pocketbase';
 
 	export let data;
@@ -35,20 +35,14 @@
 		$flash = undefined;
 	}
 
-	let unsub: () => void;
-
 	onMount(async () => {
 		try {
 			if (data.user) {
-				unsub = await pb.collection('users').subscribe(data.user.id, ({}) => {});
+				await pb.collection('users').subscribe(data.user.id, ({}) => {});
 			}
 		} catch (error) {
 			console.log(error);
 		}
-	});
-
-	onDestroy(async () => {
-		if (unsub) unsub();
 	});
 </script>
 

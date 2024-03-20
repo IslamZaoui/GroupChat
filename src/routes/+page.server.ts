@@ -5,6 +5,7 @@ import { zod } from "sveltekit-superforms/adapters";
 import { fail } from "@sveltejs/kit";
 import { redirect, setFlash } from "sveltekit-flash-message/server";
 import { ClientResponseError } from "pocketbase";
+import { extractError } from "@/utils";
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (locals.user) {
@@ -34,14 +35,12 @@ export const actions: Actions = {
             await locals.pb.collection('users').authWithPassword(form.data.username, form.data.password);
         }
         catch (e) {
+            console.error(e)
             if (e instanceof ClientResponseError) {
                 if (e.response.message === "Failed to authenticate.")
                     setFlash({ message: 'Invalid username or password', type: 'error' }, cookies);
                 else {
-                    if (e.response.data['username'])
-                        form.errors.username = [e.response.data['username'].message]
-                    if (e.response.data['password'])
-                        form.errors.username = [e.response.data['username'].message]
+                    extractError(form.errors, e.response.data);
                 }
             }
             return fail(400, {

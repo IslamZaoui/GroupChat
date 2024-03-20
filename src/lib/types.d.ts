@@ -4,6 +4,7 @@ type User = {
     avatar: string
     isBanned: boolean
     isOnline: boolean
+    verified: boolean
     created: string
     updated: string
 }

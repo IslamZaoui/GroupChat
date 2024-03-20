@@ -1,6 +1,9 @@
 <script lang="ts">
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import { pb } from '@/pocketbase';
 	import { getAvatar, getMessageAttachment } from '@/utils';
+	import Verified from 'lucide-svelte/icons/badge-check';
+	import { onDestroy, onMount } from 'svelte';
 
 	export let message: Message;
 	export let thisUserId: string;
@@ -9,24 +12,49 @@
 		return message.expand.user.id === thisUserId;
 	}
 
-	let attachment: string = getMessageAttachment(message.id, message.attachment);
-	let attachmentType: 'image' | 'audio' | null = null;
+	function getAttachmentType(attachment: string) {
+		let attachmentType: 'image' | 'audio' | null = null;
 
-	if (attachment) {
-		const extension = attachment.split('.').pop()?.toLowerCase();
-		if (extension === 'jpg' || extension === 'jpeg' || extension === 'png' || extension === 'gif') {
-			attachmentType = 'image';
-		} else if (extension === 'mp3' || extension === 'wav' || extension === 'ogg') {
-			attachmentType = 'audio';
+		if (attachment) {
+			const extension = attachment.split('.').pop()?.toLowerCase();
+			if (
+				extension === 'jpg' ||
+				extension === 'jpeg' ||
+				extension === 'png' ||
+				extension === 'gif'
+			) {
+				attachmentType = 'image';
+			} else if (extension === 'mp3' || extension === 'wav' || extension === 'ogg') {
+				attachmentType = 'audio';
+			}
 		}
+
+		return attachmentType;
 	}
+
+	let unsub: () => void;
+
+	onMount(async () => {
+		try {
+			unsub = await pb.collection('users').subscribe<User>(message.expand.user.id, (e) => {
+				const user = e.record;
+				if (e.action === 'update') {
+					message.expand.user = user;
+				}
+			});
+		} catch (e) {
+			console.error(e);
+		}
+	});
+
+	onDestroy(() => {
+		if (unsub) unsub();
+	});
 </script>
 
 <div class="flex flex-col items-{isMyMessage() ? 'end' : 'start'} gap-2 whitespace-pre-wrap p-4">
 	<div class="flex items-center gap-3 {isMyMessage() ? 'flex-row-reverse' : ''}">
-		<span
-			class="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
-		>
+		<span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
 			<Avatar.Root class="aspect-square h-full w-full">
 				<Avatar.Image
 					src={getAvatar(message.expand.user.id, message.expand.user.avatar)}
@@ -36,12 +64,32 @@
 			</Avatar.Root>
 		</span>
 		<div class="flex flex-col items-{isMyMessage() ? 'end' : 'start'}">
-			<span class="max-w-xs break-words rounded-md bg-accent p-3">{message.content}</span>
-			{#if attachmentType === 'image'}
-				<img src={attachment} alt="Attachment" class="mt-2 h-auto max-w-full" />
-			{:else if attachmentType === 'audio'}
+			<div
+				class="flex max-w-xs flex-col gap-2 break-words rounded-md items-{isMyMessage()
+					? 'end'
+					: 'start'} {message.expand.user.isBanned ? 'bg-red-700' : 'bg-accent'} p-3"
+			>
+				<span
+					class="flex items-center gap-1 text-[12px] font-medium flex-{isMyMessage()
+						? 'row-reverse'
+						: ''}"
+				>
+					<span>{message.expand.user.username}</span>
+					{#if message.expand.user.verified}
+						<Verified size={16} class=" text-blue-600" />
+					{/if}</span
+				>
+				<span class="text-lg">{message.content}</span>
+			</div>
+			{#if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'image'}
+				<img
+					src={getMessageAttachment(message.id, message.attachment)}
+					alt="Attachment"
+					class="mt-2 h-auto max-w-full"
+				/>
+			{:else if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'audio'}
 				<audio controls class="mt-2">
-					<source src={attachment} type="audio/mpeg" />
+					<source src={getMessageAttachment(message.id, message.attachment)} type="audio/mpeg" />
 					Your browser does not support the audio element.
 				</audio>
 			{/if}

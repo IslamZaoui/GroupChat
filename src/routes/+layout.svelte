@@ -4,7 +4,7 @@
 	import { toast } from 'svelte-sonner';
 	import { getFlash } from 'sveltekit-flash-message';
 	import { page } from '$app/stores';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, afterUpdate } from 'svelte';
 	import { pb } from '@/pocketbase';
 
 	export let data;
@@ -38,8 +38,12 @@
 	let unsub: () => void;
 
 	onMount(async () => {
-		if (data.user) {
-			unsub = await pb.collection('users').subscribe(data.user.id, ({}) => {});
+		try {
+			if (data.user) {
+				unsub = await pb.collection('users').subscribe(data.user.id, ({}) => {});
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	});
 
@@ -47,6 +51,11 @@
 		if (unsub) unsub();
 	});
 </script>
+
+<svelte:head>
+	<title>Public Group Chat</title>
+	<meta name="description" content="Public Group Chat" />
+</svelte:head>
 
 <Toaster closeButton richColors />
 <slot />

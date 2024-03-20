@@ -33,3 +33,49 @@ export const messageSchema = z.object({
 })
 
 export type MessageSchema = typeof messageSchema
+
+export const changeImage = z.object({
+    avatar: z.string({ required_error: 'Image URL is required' }).url({
+        message: 'Image URL is invalid'
+    })
+})
+
+export type ChangeImage = typeof changeImage
+
+export const changeUsername = z.object({
+    username: z
+        .string({ required_error: 'Username is required' })
+        .regex(/^[a-zA-Z0-9\.\-_]+$/, { message: 'Username must be alphanumeric' })
+        .min(5, { message: 'Username must be at least 5 characters' })
+        .max(16, { message: 'Username must be at most 16 characters' })
+        .trim()
+})
+
+export type ChangeUsername = typeof changeUsername
+
+export const changePassword = z.object({
+    oldPassword: z
+        .string({ required_error: 'Old Password is required' })
+        .min(8, { message: 'Old Password must be at least 8 characters' })
+        .max(16, { message: 'Old Password must be at most 16 characters' })
+        .trim(),
+    password: z
+        .string({ required_error: 'Password is required' })
+        .min(8, { message: 'Password must be at least 8 characters' })
+        .max(16, { message: 'Password must be at most 16 characters' })
+        .trim(),
+    passwordConfirm: z
+        .string({ required_error: 'Confirm password is required' })
+        .min(8, { message: 'Confirm Password must be at least 8 characters' })
+        .max(16, { message: 'Confirm Password must be at most 16 characters' })
+        .trim()
+}).superRefine(({ passwordConfirm, password }, ctx) => {
+    if (passwordConfirm !== password) {
+        ctx.addIssue({
+            code: "custom",
+            message: "The passwords did not match"
+        });
+    }
+});
+
+export type ChangePassword = typeof changePassword

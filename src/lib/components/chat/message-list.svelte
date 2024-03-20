@@ -19,7 +19,7 @@
 	class="flex h-full w-full flex-col overflow-y-auto overflow-x-hidden"
 	bind:this={$messageListElement}
 >
-	{#each messages as message}
+	{#each messages || [] as message}
 		<MessageContainer {message} {thisUserId} />
 	{/each}
 </div>

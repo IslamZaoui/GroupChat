@@ -9,51 +9,66 @@
 
 	let onlineUsers: User[] = data.onlineUsers;
 	let messages: Message[] = data.messages;
-	let thisUserId: string = data.user?.id ?? '';
 	let unsubOnlineUsers: () => void;
 	let unsubMessages: () => void;
 
 	onMount(async () => {
-		unsubOnlineUsers = await pb.collection('users').subscribe<User>('*', (e) => {
-			const updatedUser = e.record;
-			if (updatedUser.isOnline) {
-				const existingUser = onlineUsers.find((user) => user.id === updatedUser.id);
-				if (!existingUser) {
-					onlineUsers = [...onlineUsers, updatedUser];
-				} else {
-				}
-			} else {
-				onlineUsers = onlineUsers.filter((user) => user.id !== updatedUser.id);
-			}
-		});
-
-		unsubMessages = await pb.collection('messages').subscribe<Message>(
-			'*',
-			(e) => {
-				let message = e.record;
-				console.log(message);
+		try {
+			unsubOnlineUsers = await pb.collection('users').subscribe<User>('*', (e) => {
+				const updatedUser = e.record;
 				switch (e.action) {
+					case 'create':
+						onlineUsers = [...onlineUsers, updatedUser];
+						break;
 					case 'update':
-						const messageIndex = messages.findIndex((msg) => msg.id === message.id);
-						if (messageIndex !== -1) {
-							messages[messageIndex] = message;
+						const userIndex = onlineUsers.findIndex((user) => user.id === updatedUser.id);
+						if (userIndex !== -1) {
+							onlineUsers[userIndex] = updatedUser;
 						}
 						break;
 					case 'delete':
-						messages = messages.filter((msg) => msg.id !== message.id);
-						break;
-					case 'create':
-						messages = [...messages, message];
-						scrollChatBottom('smooth');
+						onlineUsers = onlineUsers.filter((user) => user.id !== updatedUser.id);
 						break;
 					default:
-						console.warn(`Unknown message action: ${e.action}`);
+						console.warn(`Unknown user action: ${e.action}`);
+						break;
 				}
-			},
-			{
-				expand: 'user'
-			}
-		);
+			});
+		} catch (e) {
+			console.error(e);
+		}
+
+		try {
+			unsubMessages = await pb.collection('messages').subscribe<Message>(
+				'*',
+				(e) => {
+					let message = e.record;
+					console.log(message);
+					switch (e.action) {
+						case 'update':
+							const messageIndex = messages.findIndex((msg) => msg.id === message.id);
+							if (messageIndex !== -1) {
+								messages[messageIndex] = message;
+							}
+							break;
+						case 'delete':
+							messages = messages.filter((msg) => msg.id !== message.id);
+							break;
+						case 'create':
+							messages = [...messages, message];
+							scrollChatBottom('smooth');
+							break;
+						default:
+							console.warn(`Unknown message action: ${e.action}`);
+					}
+				},
+				{
+					expand: 'user'
+				}
+			);
+		} catch (e) {
+			console.error(e);
+		}
 	});
 
 	export function scrollChatBottom(behavior?: ScrollBehavior): void {
@@ -85,8 +100,7 @@
 			defaultLayout={data.layout}
 			{onlineUsers}
 			{messages}
-			{thisUserId}
-			data={data.form}
+			user={data.user}
 		/>
 	</div>
 

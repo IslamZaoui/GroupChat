@@ -1,9 +1,11 @@
 import { superValidate, withFiles } from 'sveltekit-superforms/server';
 import type { Actions, PageServerLoad } from './$types';
 import { zod } from 'sveltekit-superforms/adapters';
-import { messageSchema } from '@/forms/schema';
+import { changeImage, changePassword, changeUsername, messageSchema } from '@/forms/schema';
 import { fail } from '@sveltejs/kit';
 import { ClientResponseError } from 'pocketbase';
+import { extractError } from '@/utils';
+import { setFlash } from 'sveltekit-flash-message/server';
 
 export const load = (async (event) => {
     //layout
@@ -20,35 +22,43 @@ export const load = (async (event) => {
     let onlineUsers: User[] = [];
 
     try {
-        onlineUsers = await event.locals.pb.collection('users').getFullList({
+        onlineUsers = await event.locals.pb.collection('users').getFullList<User>({
             filter: 'isOnline = true',
             sort: 'updated',
             $autoCancel: false
         });
     }
-    catch (e) { console.log(e); }
+    catch (e) { console.error(e); }
 
     //messages
     let messages: Message[] = [];
 
     try {
-        messages = await event.locals.pb.collection('messages').getFullList({
+        messages = await event.locals.pb.collection('messages').getFullList<Message>({
             sort: 'created',
             expand: 'user',
         })
     }
-    catch (e) { console.log(e); }
+    catch (e) { console.error(e); }
 
 
     return {
         layout, collapsed, onlineUsers, messages,
-        form: await superValidate(zod(messageSchema)),
+        sendMessageForm: await superValidate(zod(messageSchema)),
+        changePasswordForm: await superValidate(zod(changePassword)),
+        changeUsernameForm: await superValidate(zod(changeUsername)),
+        changeImageForm: await superValidate(zod(changeImage))
     };
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
     sendMessage: async ({ request, locals, cookies }) => {
         const form = await superValidate(request, zod(messageSchema));
+
+        if (locals.user?.isBanned) {
+            setFlash({ message: 'You are banned from sending messages.', type: 'error' }, cookies);
+            return fail(400, withFiles({ form }));
+        }
 
         if (!form.valid) {
             console.log("submition faild")
@@ -63,15 +73,93 @@ export const actions: Actions = {
             })
         }
         catch (e) {
+            console.error(e)
             if (e instanceof ClientResponseError) {
-                if (e.response.data['content'])
-                    form.errors.content = [e.response.data['content'].message]
-                if (e.response.data['attachment'])
-                    form.errors.attachment = [e.response.data['attachment'].message]
-                console.log(e.response)
+                extractError(form.errors, e.response.data);
             }
+            return fail(400, { sendMessageForm: form });
         }
 
-        return withFiles({ form });
+        return withFiles({
+            sendMessageForm: form
+        });
+    },
+
+    changePassword: async ({ request, locals, cookies }) => {
+        if (!locals.user) return fail(401, { message: "Unauthorized" });
+
+        const form = await superValidate(request, zod(changePassword));
+
+        if (!form.valid) {
+            return fail(400, { form });
+        }
+
+        try {
+            await locals.pb.collection('users').update(locals.user?.id, form.data)
+            setFlash({ message: 'Password changed successfully', type: 'success' }, cookies);
+        }
+        catch (e) {
+            console.error(e)
+            if (e instanceof ClientResponseError) {
+                extractError(form.errors, e.response.data);
+            }
+            return fail(400, { changePasswordForm: form });
+        }
+
+        return {
+            changePasswordForm: form
+        };
+    },
+
+    changeUsername: async ({ request, locals, cookies }) => {
+        if (!locals.user) return fail(401, { message: "Unauthorized" });
+
+        const form = await superValidate(request, zod(changeUsername));
+
+        if (!form.valid) {
+            return fail(400, { form });
+        }
+
+        try {
+            await locals.pb.collection('users').update(locals.user?.id, form.data)
+            setFlash({ message: 'Username changed successfully', type: 'success' }, cookies);
+        }
+        catch (e) {
+            console.error(e)
+            if (e instanceof ClientResponseError) {
+                extractError(form.errors, e.response.data);
+            }
+            return fail(400, { changeUsernameForm: form });
+        }
+
+        return {
+            changeUsernameForm: form
+        };
+    },
+
+    changeImage: async ({ request, locals, cookies }) => {
+        if (!locals.user) return fail(401, { message: "Unauthorized" });
+
+        const form = await superValidate(request, zod(changeImage));
+
+        if (!form.valid) {
+            return fail(400, { form });
+        }
+
+        try {
+            await locals.pb.collection('users').update(locals.user?.id, form.data)
+            setFlash({ message: 'Avatar changed successfully', type: 'success' }, cookies);
+        }
+        catch (e) {
+            console.error(e)
+            if (e instanceof ClientResponseError) {
+                extractError(form.errors, e.response.data);
+            }
+            return fail(400, { changeImageForm: form });
+        }
+
+        return {
+            changeImageForm: form
+        };
     }
 };

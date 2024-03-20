@@ -4,8 +4,7 @@
 	import * as Resizable from '$lib/components/ui/resizable';
 	import SideBar from './side-bar.svelte';
 	import BotBar from './bot-bar.svelte';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms/client';
-	import type { MessageSchema } from '@/forms/schema';
+	import TopBar from './top-bar.svelte';
 
 	export let defaultLayout: [number, number] = [30, 70];
 	export let defaultCollapsed = false;
@@ -28,8 +27,7 @@
 
 	export let onlineUsers: User[];
 	export let messages: Message[] = [];
-	export let thisUserId: string;
-	export let data: SuperValidated<Infer<MessageSchema>>;
+	export let user: User | undefined;
 
 	let windowWidth: number;
 	let isMobile: boolean;
@@ -55,8 +53,11 @@
 	{/if}
 	<Resizable.Pane defaultSize={defaultLayout[1]}>
 		<div class="flex h-full w-full flex-col justify-between">
-			<MessageList {messages} {thisUserId} />
-			<BotBar {data} />
+			{#if user}
+				<TopBar {user} />
+			{/if}
+			<MessageList {messages} thisUserId={user?.id ?? ''} />
+			<BotBar />
 		</div>
 	</Resizable.Pane>
 </Resizable.PaneGroup>

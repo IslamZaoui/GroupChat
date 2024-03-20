@@ -15,7 +15,7 @@
 	<Separator class="my-2" />
 	<!--Users list-->
 	<ScrollArea class="h-[520px] w-full p-2">
-		{#each onlineUsers as userData}
+		{#each onlineUsers || [] as userData}
 			<UserView {userData} {isCollapsed} />
 		{/each}
 	</ScrollArea>

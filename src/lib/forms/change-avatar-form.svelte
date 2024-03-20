@@ -3,6 +3,7 @@
 	import { type ChangeImage, changeImage } from './schema';
 	import * as Form from '$lib/components/ui/form';
 	import { zodClient } from 'sveltekit-superforms/adapters';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import { Input } from '@/components/ui/input';
 	import { page } from '$app/stores';
 	import type { Writable } from 'svelte/store';
@@ -15,16 +16,21 @@
 			if (e.result.type === 'success') $optionDialogStatus = false;
 		}
 	});
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, delayed } = form;
 </script>
 
 <form action="?/changeImage" use:enhance method="POST">
 	<Form.Field {form} name="avatar">
 		<Form.Control let:attrs>
 			<Form.Label>Avatar URL</Form.Label>
-			<Input {...attrs} bind:value={$formData.avatar} />
+			<Input {...attrs} bind:value={$formData.avatar} disabled={$delayed} />
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
-	<Form.Button class="w-full">Change avatar</Form.Button>
+	<Form.Button class="w-full" disabled={$delayed}>
+		{#if $delayed}
+			<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+		{/if}
+		Change avatar
+	</Form.Button>
 </form>

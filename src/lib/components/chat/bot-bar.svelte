@@ -19,7 +19,7 @@
 		validators: zodClient(messageSchema)
 	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, delayed } = form;
 
 	const handleKeyPress = (event: KeyboardEvent) => {
 		if (event.key === 'Enter' && !event.shiftKey) {
@@ -77,6 +77,7 @@
 							placeholder="text...."
 							class="flex min-h-9 w-full resize-none items-center overflow-hidden rounded border bg-background"
 							rows={1}
+							disabled={$delayed}
 						/>
 					</Form.Control>
 				</Form.Field>

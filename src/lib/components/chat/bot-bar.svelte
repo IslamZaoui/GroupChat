@@ -19,7 +19,7 @@
 		validators: zodClient(messageSchema)
 	});
 
-	const { form: formData, enhance, delayed } = form;
+	const { form: formData, enhance, delayed, errors } = form;
 
 	const handleKeyPress = (event: KeyboardEvent) => {
 		if (event.key === 'Enter' && !event.shiftKey) {
@@ -38,7 +38,7 @@
 	<div class="flex w-full">
 		<div class="flex w-full items-center justify-between gap-2 p-2">
 			<form
-				class="flex w-full items-end gap-2"
+				class="flex h-min w-full items-center gap-2"
 				use:enhance
 				method="POST"
 				action="?/sendMessage"
@@ -62,19 +62,18 @@
 						{:else}
 							<Audio />
 						{/if}
-						<span>{$formData.attachment.name}</span>
+						<span class="truncate max-w-[100px]">{$formData.attachment.name}</span>
 					</Badge>
 				{/if}
 				<Form.Field {form} name="content" class="w-full">
 					<Form.Control let:attrs>
-						<Form.FieldErrors />
 						<Textarea
 							autofocus
 							{...attrs}
 							on:keypress={handleKeyPress}
 							name="content"
 							bind:value={$formData.content}
-							placeholder="text...."
+							placeholder={$errors.content?.join(', ') ?? 'Type a message...'}
 							class="flex min-h-9 w-full resize-none items-center overflow-hidden rounded border bg-background"
 							rows={1}
 							disabled={$delayed}

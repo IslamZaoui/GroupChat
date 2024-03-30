@@ -81,18 +81,20 @@
 				>
 				<span class="max-w-[300px] break-words text-lg">{message.content}</span>
 			</div>
-			{#if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'image'}
-				<img
-					src={getMessageAttachment(message.id, message.attachment)}
-					alt="Attachment"
-					class="mt-2 h-auto max-w-full"
-				/>
-			{:else if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'audio'}
-				<audio controls class="mt-2">
-					<source src={getMessageAttachment(message.id, message.attachment)} type="audio/mpeg" />
-					Your browser does not support the audio element.
-				</audio>
-			{/if}
+			<div class="max-w-[300px]">
+				{#if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'image'}
+					<img
+						src={getMessageAttachment(message.id, message.attachment)}
+						alt="Attachment"
+						class="mt-2 h-auto max-w-full"
+					/>
+				{:else if getAttachmentType(getMessageAttachment(message.id, message.attachment)) === 'audio'}
+					<audio controls class="mt-2">
+						<source src={getMessageAttachment(message.id, message.attachment)} type="audio/mpeg" />
+						Your browser does not support the audio element.
+					</audio>
+				{/if}
+			</div>
 		</div>
 	</div>
 </div>

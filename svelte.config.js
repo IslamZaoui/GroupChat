@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from 'svelte-adapter-bun';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -7,7 +7,8 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-			runtime: 'edge'
+			assets: true,
+			dynamic_origin: true
 		}),
 		alias: {
 			'@/*': './src/lib'

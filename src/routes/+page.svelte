@@ -18,9 +18,7 @@
 				<h1 class="text-2xl font-semibold tracking-tight">Create or Login to an account</h1>
 				<p class="text-sm text-muted-foreground">Enter your username and password to continue</p>
 			</div>
-			{#if data.user}
-				<UserAuthForm data={data.form} />
-			{/if}
+			<UserAuthForm data={data.form} />
 			<p class="px-8 text-center text-sm text-muted-foreground">
 				By clicking continue, you agree to our{' '}
 				<a href="/terms" class="underline underline-offset-4 hover:text-primary">
